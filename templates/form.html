@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AJAX Form </title>
+    <script type="text/javascript">
+		window.onload = function (){
+    		AJAXform('my-form', 'my-button', 'my-result', 'post' ); // AJAXform( 'your-form-id', 'button-id', 'result-element-id', 'post or get method' );
+            AJAXget()
+		};
+
+
+
+		function AJAXform(formID, buttonID, resultID, formMethod = 'post' ){
+        var selectForm = document.getElementById(formID); // Select the form by ID.
+        var selectButton = document.getElementById(buttonID); // Select the button by ID.
+        var selectResult = document.getElementById(resultID); // Select result element by ID.
+        var formAction = document.getElementById(formID).getAttribute('action'); // Get the form action.
+
+
+        function XMLhttp(){
+            var httpRequest = new XMLHttpRequest();
+            var temp = document.getElementById("val").value;
+            var formData = JSON.stringify({
+                "data":temp
+            });
+
+            httpRequest.onreadystatechange = function(){
+                if ( this.readyState == 4 && this.status == 200 ) {
+                    <!--selectResult.innerHTML = this.responseText; // Display the result inside result element.-->
+                }
+            };
+
+            httpRequest.open(formMethod, formAction);
+            httpRequest.setRequestHeader("Content-Type", "application/json");
+            httpRequest.setRequestHeader("Cache-Control", "no-cache");
+            httpRequest.send(formData);
+        }
+
+        selectButton.onclick = function(){ // If clicked on the button.
+           XMLhttp();
+           AJAXget();
+        }
+
+        selectForm.onsubmit = function(){ // Prevent page refresh
+            return false;
+        }
+}
+
+
+
+
+
+function AJAXget(){
+
+            var httpRequest = new XMLHttpRequest();
+            httpRequest.onreadystatechange = function(){
+                if ( this.readyState == 4 && this.status == 200 ) {
+                    var items = JSON.parse(this.responseText);
+
+                    <!--console.log(items);-->
+                    <!--console.log(items.todos[0].data)-->
+                    var output = '<ul>';
+                    for (var i=0 ; i < items.todos.length ; i++){
+                        var btnId = `${items.todos[i].id}`;
+                        //console.log(btnId)
+                        var id = `li_${btnId}`;
+                        output += '<li contenteditable="true" id=' + id + '>' + items.todos[i].data + '</li>' +
+                        '<button id=' + btnId+" "+ 'onClick = "AJAXedit(this.id)">Update</button>' +
+                        '<button id=' + btnId+" "+ 'onClick = "AJAXdelete(this.id)">Delete</button>';
+
+                    }
+                    output += '</ul>';
+                    document.getElementById("my-result").innerHTML = output;
+                }
+            };
+
+            httpRequest.open("GET", "/GET/v1/todos");
+            httpRequest.setRequestHeader("Content-Type", "application/json");
+            httpRequest.setRequestHeader("Cache-Control", "no-cache");
+            httpRequest.send(null);
+
+
+}
+
+function AJAXdelete(clickedId){
+        var data = null;
+        console.log("ID :",clickedId)
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+
+        xhr.addEventListener("readystatechange", function () {
+          if (this.readyState === 4) {
+            console.log(this.responseText);
+
+          }
+        });
+
+        xhr.open("DELETE", "http://localhost:8080/delete/"+clickedId);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Cache-Control", "no-cache");
+        xhr.send(data);
+
+
+
+}
+
+function AJAXedit(clicked_id){
+            var temp = document.getElementById(`li_${clicked_id}`).innerText;
+            console.log(temp)
+            var data = JSON.stringify({
+              "data": temp
+            });
+            console.log(clicked_id)
+            var xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            xhr.addEventListener("readystatechange", function () {
+              if (this.readyState === 4) {
+                <!--console.log(this.responseText);-->
+
+              }
+            });
+
+            xhr.open("PUT", "http://localhost:8080/PUT/v1/todos/"+clicked_id);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("Cache-Control", "no-cache");
+            xhr.send(data);
+
+
+}
+
+
+
+
+    </script>
+</head>
+<body>
+
+<form action="{{url_for('save')}}" id="my-form">
+    <input type="text" value="" placeholder="Enter todo" id="val">
+    <input type="submit" name="submit" value="Send me!" id="my-button">
+</form>
+
+<ul id="my-result"></ul>
+
+</body>
+</html>
+
+

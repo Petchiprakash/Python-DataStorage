@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TODO List</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+</head>
+<body>
+<div id="container">
+    <div class="pagetitle">
+        <h1>TODO List</h1>
+    </div>
+    <div id="main">
+        <form method="post" action="{{url_for('save')}}">
+            <label for="name">Todo:
+                <input type="text" id="todo1" placeholder="todo"/>
+            </label>
+            <button id="sendMessage" type="submit" onclick="login()">Send Message</button>
+        </form>
+    </div>
+    <ul id="print">
+
+    </ul>
+</div>
+
+
+<script>
+
+            var req = new XMLHttpRequest();
+            req.overrideMimeType("application/json");
+            req.open('GET','/GET/v1/todos', true);
+            req.onload  = function() {
+               var jsonResponse = JSON.parse(req.responseText);
+               var arr = jsonResponse.todos;
+               var element = arr.map(ele => {
+                  return `<div id="div1"><li contentEditable = "true",id="ls">${ele.data}  <button style = "color : red;" id="remove" onclick="del()">Delete</button> <button style = "color : blue;"  onclick="edit(${ele.id})">Edit</button></li></div>`
+               }).join("");
+               var list =  document.getElementById("print");
+               list.innerHTML = element;
+            };
+            req.send(null);
+
+          function login(){
+          var temp = document.getElementById("todo1").value;
+          var data = JSON.stringify({
+            "data": temp
+          });
+          var xhr = new XMLHttpRequest();
+          xhr.withCredentials = true;
+
+          xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === 4) {
+            }
+          });
+
+          xhr.open("POST", "http://localhost:8080/POST/v1/todos");
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.setRequestHeader("Cache-Control", "no-cache");
+          xhr.send(data);
+       }
+
+       function del(){
+
+        var data = null;
+        var id = document.getElementById("ls").value;
+        console.log(id)
+
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+
+        xhr.addEventListener("readystatechange", function () {
+          if (this.readyState === 4) {
+            // var parent = document.getElementById(id).innerHTML;
+            // console.log(parent)
+
+
+
+
+            console.log(this.responseText);
+          }
+        });
+
+        xhr.open("DELETE", "http://localhost:8080/delete/"+ id);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Cache-Control", "no-cache");
+
+
+xhr.send(data);
+
+       }
+
+       function edit(id){
+        console.log(id);
+        var ele = document.getElementById(id).value;
+        console.log(ele);
+        // var eleValue = ele.innerText;
+
+        var textBox = document.createElement('TEXTBOX');
+        ele.parentNode.replaceChild(textBox, ele);
+        var textValue = textBox.value;
+
+
+
+        var data = JSON.stringify({
+        "data": textValue
+      });
+
+      var xhr = new XMLHttpRequest();
+      xhr.withCredentials = true;
+
+      xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === 4) {
+          console.log(this.responseText);
+        }
+      });
+
+      xhr.open("PUT", "http://localhost:8080/PUT/v1/todos/");
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.setRequestHeader("Cache-Control", "no-cache");
+
+xhr.send(data);
+
+
+       }
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
